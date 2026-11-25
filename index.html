@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>My Budget</title>
+  <meta name="description" content="Personal budget planner: wages, bills with reminders and spending budgets.">
+  <meta name="theme-color" content="#00463c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Budget">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="monthbar">
+        <button class="icon-btn" id="prev" aria-label="Previous month">&#8249;</button>
+        <h1 id="month">Month</h1>
+        <button class="icon-btn" id="next" aria-label="Next month">&#8250;</button>
+      </div>
+
+      <p class="label">Left this month</p>
+      <p class="big" id="left">£0.00</p>
+
+      <div class="figs">
+        <div><span class="label">Income</span><strong id="income">£0.00</strong></div>
+        <div><span class="label">Bills</span><strong id="bills">£0.00</strong></div>
+        <div><span class="label">Spent</span><strong id="spent">£0.00</strong></div>
+      </div>
+
+      <div class="meter" aria-hidden="true"><span id="meter"></span></div>
+      <p class="meter-text" id="meterText">No bills yet</p>
+      <p class="meter-text" id="planText"></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <div class="sec-head">
+        <h2>Bills</h2>
+        <button class="add ghost-add" data-add="bill">+ Bill</button>
+      </div>
+      <ul class="list" id="billList"></ul>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <h2>Budget</h2>
+        <button class="add ghost-add" id="addBudget">+ Category</button>
+      </div>
+      <ul class="list" id="budgetList"></ul>
+      <h3 class="sub" id="spendTitle" hidden>Payments this month</h3>
+      <ul class="list" id="spendList"></ul>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <h2>Income</h2>
+        <button class="add ghost-add" data-add="income">+ Income</button>
+      </div>
+      <ul class="list" id="incomeList"></ul>
+    </section>
+
+    <section class="backup">
+      <h2>Backup</h2>
+      <p>Your data is saved on this phone only. Make a backup now and then.</p>
+      <div class="row-btns">
+        <button class="ghost" id="exportBtn">Save backup</button>
+        <label class="ghost file">Restore backup<input type="file" id="importFile" accept="application/json,.json"></label>
+      </div>
+    </section>
+  </main>
+
+  <nav class="actionbar" aria-label="Quick add">
+    <button data-add="wage"><span aria-hidden="true">+</span> Wage</button>
+    <button data-add="bill"><span aria-hidden="true">+</span> Bill</button>
+    <button id="addSpend" class="main-action"><span aria-hidden="true">+</span> Payment</button>
+  </nav>
+
+  <dialog id="dlg">
+    <form id="form" method="dialog" novalidate>
+      <h2 id="dlgTitle">Add</h2>
+
+      <fieldset class="seg">
+        <legend class="sr">Type</legend>
+        <label><input type="radio" name="type" value="bill" checked><span>Bill</span></label>
+        <label><input type="radio" name="type" value="income"><span>Income</span></label>
+      </fieldset>
+
+      <label class="field">Name
+        <input id="fName" maxlength="40" placeholder="e.g. Rent, Wages">
+      </label>
+
+      <label class="field">Amount (£)
+        <input id="fAmount" inputmode="decimal" placeholder="0.00">
+      </label>
+
+      <label class="field">Category
+        <select id="fCat"></select>
+      </label>
+
+      <label class="field">How often
+        <select id="fRepeat">
+          <option value="weekly">Every week</option>
+          <option value="fortnightly">Every 2 weeks</option>
+          <option value="monthly">Every month</option>
+          <option value="once">One-off</option>
+        </select>
+      </label>
+
+      <label class="field" id="dayField">Day of the month
+        <input id="fDay" type="number" min="1" max="31" inputmode="numeric" value="1">
+      </label>
+
+      <label class="field" id="dateField" hidden><span id="dateLabel">Date</span>
+        <input id="fDate" type="date">
+      </label>
+
+      <p class="error" id="formError" role="alert"></p>
+
+      <div class="dlg-btns">
+        <button type="button" class="danger" id="delBtn" hidden>Delete</button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" data-close>Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="budgetDlg">
+    <form id="budgetForm" method="dialog" novalidate>
+      <h2 id="budgetTitle">New category</h2>
+      <p class="hint">How much you plan to spend each month, e.g. Food £250.</p>
+      <label class="field">Name
+        <input id="bName" maxlength="30" placeholder="e.g. Food, Transport, Going out">
+      </label>
+      <label class="field">Monthly budget (£)
+        <input id="bAmount" inputmode="decimal" placeholder="0.00">
+      </label>
+      <p class="error" id="budgetError" role="alert"></p>
+      <div class="dlg-btns">
+        <button type="button" class="danger" id="bDel" hidden>Delete</button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" data-close>Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="spendDlg">
+    <form id="spendForm" method="dialog" novalidate>
+      <h2 id="spendDlgTitle">New payment</h2>
+      <label class="field">Category
+        <select id="sBudget"></select>
+      </label>
+      <label class="field">Amount (£)
+        <input id="sAmount" inputmode="decimal" placeholder="0.00">
+      </label>
+      <label class="field">Note (optional)
+        <input id="sNote" maxlength="40" placeholder="e.g. Tesco, petrol">
+      </label>
+      <label class="field">Date
+        <input id="sDate" type="date">
+      </label>
+      <p class="error" id="spendError" role="alert"></p>
+      <div class="dlg-btns">
+        <button type="button" class="danger" id="sDel" hidden>Delete</button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" data-close>Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
